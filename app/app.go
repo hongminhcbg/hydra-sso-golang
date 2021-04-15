@@ -26,9 +26,12 @@ func (app *App) Init() {
 
 	hydra := hydra_client.NewHydraClient("http://localhost:4445", "http://localhost:4444")
 	loginController := controllers.NewLoginController(hydra)
+	consentController := controllers.NewConsentController(hydra)
 
 	engine.GET("/login", loginController.Login)
 	engine.POST("/login", loginController.AuthUsernamePassword)
+	engine.GET("/consent", consentController.GetConsent)
+	engine.POST("/consent", consentController.AuthConsent)
 
 	app.engine = engine
 }
