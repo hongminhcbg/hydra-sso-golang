@@ -1,0 +1,88 @@
+make client local 
+curl --location --request POST 'http://127.0.0.1:4445/clients' \
+--header 'Content-Type: application/json' \
+--header 'cache-control: no-cache' \
+--data-raw '{
+    "client_id": "minhnh21",
+    "client_secret": "minhnh21",
+    "client_name": "minhnh21",
+    "redirect_uris": [
+        "http://127.0.0.1:9010/callback"
+    ],
+    "allowed_cors_origins": [
+    "http://127.0.0.1"
+  ],
+    "grant_types": [
+        "authorization_code",
+        "refresh_token",
+        "client_credentials"
+    ],
+    "response_types": [
+        "code",
+        "id_token",
+        "access_token",
+        "refresh_token"
+    ],
+    "metadata":{"background_uri":"","phone":"","email":""},
+    "scope": "openid offline profile name phone mail",
+    "audience": [],
+    "owner": "",
+    "policy_uri": "",
+    "allowed_cors_origins": [],
+    "tos_uri": "",
+    "client_uri": "",
+    "logo_uri": "",
+    "contacts": [],
+    "client_secret_expires_at": 0,
+    "subject_type": "public",
+    "jwks": {
+        "keys": null
+    },
+    "token_endpoint_auth_method": "client_secret_post",
+    "userinfo_signed_response_alg": "none"
+}'
+
+
+
+Run client local 
+docker run -it --rm \
+      --network hydraguide \
+      -p 9010:9010 \
+      oryd/hydra:v1.4.10 \
+      token user --skip-tls-verify \
+        --port 9010 \
+        --auth-url http://127.0.0.1:4444/oauth2/auth \
+        --token-url http://ory-hydra-example:4444/oauth2/token \
+        --client-id minhnh21 \
+        --client-secret minhnh21 \
+        --scope 'openid offline profile name phone mail'
+
+
+oauth2 client code
+package main
+
+import (
+	"context"
+	"fmt"
+	"golang.org/x/oauth2"
+)
+
+const code = "6PO8-nzxqhtOZM0xAUqGuYWZ0FX_1_H8vOA1QHueJNg.eH0IGFCkuudYxF6NNKDxPNqQBtppRAhMAoAyS367yPg"
+func main()  {
+	fmt.Println("hello world")
+	config := oauth2.Config{
+		ClientID:     "minhnh21",
+		ClientSecret: "minhnh21",
+		Endpoint:     oauth2.Endpoint{
+			AuthURL:   "http://localhost:4444/oauth2/token",
+			TokenURL:  "http://localhost:4444/oauth2/token",
+		},
+		RedirectURL: "http://127.0.0.1:9010/callback",
+	}
+	token, err := config.Exchange(context.Background(), code)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("[DB] token %+v= ", token)
+}
