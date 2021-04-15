@@ -6,7 +6,6 @@
 <body>
     <h1> This is login page </h1>
     <form action="/login" method="POST">
-        <input type="hidden" name="_csrf" value="{{ .csrfToken }}" />
         <input type="hidden" name="challenge" value="{{ .challenge }}" />
         <input type="email" id="email" name="email" placeholder="email@foobar.com" />
         <input type="password" id="password" name="password" />

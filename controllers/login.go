@@ -22,7 +22,6 @@ func (c *LoginController) Login(ctx *gin.Context) {
 	log.Println("login_challenge = ",loginChallenge)
 
 	ctx.HTML(http.StatusOK, "login.html", gin.H{
-		"csrfToken": "token",
 		"challenge": loginChallenge,
 	})
 }
