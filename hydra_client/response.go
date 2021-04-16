@@ -41,3 +41,9 @@ type AcceptConsentResponse struct {
 	BaseError
 	RedirectTo string `json:"redirect_to"`
 }
+
+type IntrospectResponse struct {
+	BaseError
+	Scope string `json:"scope"`
+	Active bool `json:"active"`
+}

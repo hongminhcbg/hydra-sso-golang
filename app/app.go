@@ -1,4 +1,5 @@
 package app
+
 import (
 	"github.com/gin-gonic/gin"
 	"hydra-sso/controllers"
@@ -27,12 +28,13 @@ func (app *App) Init() {
 	hydra := hydra_client.NewHydraClient("http://localhost:4445", "http://localhost:4444")
 	loginController := controllers.NewLoginController(hydra)
 	consentController := controllers.NewConsentController(hydra)
+	userController := controllers.NewUserController(hydra)
 
 	engine.GET("/login", loginController.Login)
 	engine.POST("/login", loginController.AuthUsernamePassword)
 	engine.GET("/consent", consentController.GetConsent)
 	engine.POST("/consent", consentController.AuthConsent)
-
+	engine.GET("/userinfor", userController.GetUserInformation)
 	app.engine = engine
 }
 

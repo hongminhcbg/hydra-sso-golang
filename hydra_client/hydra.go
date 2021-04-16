@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
 )
 
 type HydraClient struct {
@@ -14,6 +17,7 @@ type HydraClient struct {
 	publicHost              string
 	acceptLoginRequestURL   string
 	acceptConsentRequestURL string
+	introspectURL           string
 }
 
 func NewHydraClient(adminHost string, publicHost string) *HydraClient {
@@ -22,6 +26,7 @@ func NewHydraClient(adminHost string, publicHost string) *HydraClient {
 		publicHost:              publicHost,
 		acceptLoginRequestURL:   adminHost + "/oauth2/auth/requests/login/accept",
 		acceptConsentRequestURL: adminHost + "/oauth2/auth/requests/consent/accept",
+		introspectURL:           adminHost + "/oauth2/introspect",
 	}
 }
 
@@ -83,6 +88,47 @@ func (h *HydraClient) AcceptConsentRequest(loginChallenge string, request Accept
 	if len(response.Error) > 0 {
 		log.Printf("[DB] accept consent error: %+v", response)
 		return nil, errors.New(response.ErrorDescription)
+	}
+
+	return &response, nil
+}
+
+func (h *HydraClient) Introspect(token string) (*IntrospectResponse, error) {
+	data := url.Values{}
+	data.Set("token", token)
+	client := &http.Client{}
+	r, err := http.NewRequest(http.MethodPost, h.introspectURL , strings.NewReader(data.Encode())) // URL-encoded payload
+	if err != nil {
+		log.Fatal("[DB] make http request error", err)
+		return nil, err
+	}
+
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+
+	resp, err := client.Do(r)
+	if err != nil {
+		log.Fatal("[DB] do http request error", err)
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	var response IntrospectResponse
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		log.Println("[DB] par body error")
+		return nil, err
+	}
+
+	if len(response.Error) > 0 {
+		log.Printf("[DB] accept consent error: %+v", response)
+		return nil, errors.New(response.ErrorDescription)
+	}
+
+	if !response.Active{
+		log.Println("[DB] token not active")
+		return nil, errors.New("token not active")
 	}
 
 	return &response, nil
